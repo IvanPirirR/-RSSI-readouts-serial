@@ -1,0 +1,2 @@
+osource "c:/Users/ivpi/mytestfolder/Check_signal/boards/shields/*/Kconfig.defconfig"
+osource "C:/Users/ivpi/ncs/v1.8.0/nrf/boards/shields/*/Kconfig.defconfig"
