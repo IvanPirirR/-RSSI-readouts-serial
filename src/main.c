@@ -25,14 +25,6 @@
 static void start_scan(void);
 static struct bt_scan_cb scan_cb;
 
-/* Thinghy configuration UUID (for advertisement)*/
-
-#define BT_UUID_THINGY_VAL \
-	BT_UUID_128_ENCODE(0xef680100, 0x9b35, 0x4933, 0x9b10, 0x52ffa9740042)
-
-#define BT_UUID_THINGY \
-	BT_UUID_DECLARE_128(BT_UUID_THINGY_VAL)
-
 /* Scanning for Advertising packets, using the name to check if the device is the target
 Will call "scan_filter_match" after finding a match*/
 static void start_scan(void)
@@ -58,23 +50,24 @@ static void start_scan(void)
 	bt_scan_init(&scan_init);
 	bt_scan_cb_register(&scan_cb);
 
+	//Name for the target device
 	char *target;
 	target = "Testname";
 	
-	// Add the configuration service name to the filter
+	// Add the target name to the filter
 	err = bt_scan_filter_add(BT_SCAN_FILTER_TYPE_NAME, target);
 	if (err) {
 		printk("Scanning filters cannot be set\n");
 		return;
 	}
 
-	//Enable the filter (using device name). The flag is set to false as there is only one filter.
+	//Enable the filter. The flag is set to false as there is only one filter.
 	err = bt_scan_filter_enable(BT_SCAN_NAME_FILTER, false);
 	if (err) {
 		printk("Filters cannot be turned on\n");
 	}
 
-	//Scanning, will connect automatically if a thingy is found. Then will call the "connected" callback function
+	//Scanning, will connect automatically if a match is found.
 	err = bt_scan_start(BT_SCAN_TYPE_SCAN_PASSIVE);
 	if (err) {
 		printk("Scanning failed to start, err %d\n", err);
@@ -82,12 +75,14 @@ static void start_scan(void)
 	printk("Scanning...\n");
 }
 
-//Callback function for matching a Thingy UUID, connection takes place after this function is called  
+//Callback function for a matching name, connection takes place after this function is called  
 void scan_filter_match(struct bt_scan_device_info *device_info,
 		       struct bt_scan_filter_match *filter_match,
 		       bool connectable)
 {
 	char addr[BT_ADDR_LE_STR_LEN];
+
+	//Get the rssi value
 	int rssival = device_info->recv_info->rssi;
 
 	bt_addr_le_to_str(device_info->recv_info->addr, addr, sizeof(addr));
@@ -108,7 +103,7 @@ void scan_connecting_error(struct bt_scan_device_info *device_info)
 BT_SCAN_CB_INIT(scan_cb, scan_filter_match, NULL, scan_connecting_error, NULL);
 
 
-//Connection, starts the discovery manager after connecting
+//Connection
 static void connected(struct bt_conn *conn, uint8_t err)
 {
 	char addr[BT_ADDR_LE_STR_LEN];
@@ -137,10 +132,6 @@ static void disconnected(struct bt_conn *conn, uint8_t reason)
 
 	printk("Disconnected: %s (reason 0x%02x)\n", addr, reason);
 
-	bt_conn_unref(conn);
-	conn = NULL;
-	
-	
 	//start_scan();
 }
 
