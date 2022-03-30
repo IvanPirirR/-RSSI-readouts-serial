@@ -13,6 +13,7 @@
 #include <sys/printk.h>
 #include <stdlib.h>
 #include <string.h>
+#include <console/console.h>
 
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/hci.h>
@@ -24,6 +25,7 @@
 
 static void start_scan(void);
 static struct bt_scan_cb scan_cb;
+static char *target = "Testname";
 
 /* Scanning for Advertising packets, using the name to check if the device is the target
 Will call "scan_filter_match" after finding a match*/
@@ -41,7 +43,7 @@ static void start_scan(void)
 
 	//Parameters for matching
 	struct bt_scan_init_param scan_init = {
-		.connect_if_match = 1,
+		.connect_if_match = 0,
 		.scan_param = &scan_param,
 		.conn_param = BT_LE_CONN_PARAM_DEFAULT,
 	};
@@ -49,10 +51,6 @@ static void start_scan(void)
 	//Initiating scan and registering callback functions
 	bt_scan_init(&scan_init);
 	bt_scan_cb_register(&scan_cb);
-
-	//Name for the target device
-	char *target;
-	target = "Testname";
 	
 	// Add the target name to the filter
 	err = bt_scan_filter_add(BT_SCAN_FILTER_TYPE_NAME, target);
@@ -75,7 +73,7 @@ static void start_scan(void)
 	printk("Scanning...\n");
 }
 
-//Callback function for a matching name, connection takes place after this function is called  
+//Callback function for a matching name
 void scan_filter_match(struct bt_scan_device_info *device_info,
 		       struct bt_scan_filter_match *filter_match,
 		       bool connectable)
@@ -102,53 +100,10 @@ void scan_connecting_error(struct bt_scan_device_info *device_info)
 //Declaring callback functions for the scan filter
 BT_SCAN_CB_INIT(scan_cb, scan_filter_match, NULL, scan_connecting_error, NULL);
 
-
-//Connection
-static void connected(struct bt_conn *conn, uint8_t err)
-{
-	char addr[BT_ADDR_LE_STR_LEN];
-
-	bt_addr_le_to_str(bt_conn_get_dst(conn), addr, sizeof(addr));
-	
-	//Checking for errors
-	if (err) {
-		printk("Failed to connect to %s (%u)\n", addr, err);
-		start_scan();
-		return;
-	}
-
-	printk("Connected: %s\n", addr);
-
-	// bt_conn_disconnect(conn, BT_HCI_ERR_REMOTE_USER_TERM_CONN);
-}
-
-
-
-static void disconnected(struct bt_conn *conn, uint8_t reason)
-{
-	char addr[BT_ADDR_LE_STR_LEN];
-
-	bt_addr_le_to_str(bt_conn_get_dst(conn), addr, sizeof(addr));
-
-	printk("Disconnected: %s (reason 0x%02x)\n", addr, reason);
-
-	//start_scan();
-}
-
-
-//Declaring connection callback functions
-static struct bt_conn_cb conn_callbacks = {
-	.connected = connected,
-	.disconnected = disconnected,
-};
-
-
 //Callback function after enabling bluetooth
 static void ble_ready(int err)
 {
 	printk("Bluetooth ready\n");
-
-	bt_conn_cb_register(&conn_callbacks);
 	start_scan();
 }
 
