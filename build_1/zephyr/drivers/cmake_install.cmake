@@ -74,6 +74,11 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
+  include("C:/Users/ivpi/mytestfolder/Check_signal/build_1/zephyr/drivers/serial/cmake_install.cmake")
+endif()
+
+if(NOT CMAKE_INSTALL_LOCAL_ONLY)
+  # Include the install script for the subdirectory.
   include("C:/Users/ivpi/mytestfolder/Check_signal/build_1/zephyr/drivers/entropy/cmake_install.cmake")
 endif()
 

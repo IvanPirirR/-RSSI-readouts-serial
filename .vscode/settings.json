@@ -1,7 +1,7 @@
 {
     "nrf-connect.applications": [
         "${workspaceFolder}",
-        "c:\\Users\\ivpi\\mytestfolder\\echo"
+        "c:\\Users\\ivpi\\mytestfolder\\central_multilink"
     ],
     "files.associations": {
         "gatt.h": "c",
@@ -9,9 +9,35 @@
         "bluetooth.h": "c",
         "typeinfo": "c",
         "conn.h": "c",
-        "console.h": "c"
+        "console.h": "c",
+        "array": "c",
+        "atomic": "c",
+        "*.tcc": "c",
+        "cstddef": "c",
+        "cstdio": "c",
+        "cwchar": "c",
+        "vector": "c",
+        "functional": "c",
+        "memory": "c",
+        "memory_resource": "c",
+        "optional": "c",
+        "string_view": "c",
+        "tuple": "c",
+        "type_traits": "c",
+        "random": "c",
+        "fstream": "c",
+        "initializer_list": "c",
+        "new": "c",
+        "stdexcept": "c",
+        "string": "c",
+        "system_error": "c",
+        "ratio": "c",
+        "utility": "c",
+        "zephyr.h": "c",
+        "hci_core.h": "c",
+        "hci.h": "c"
     },
-    "nrf-connect.topdir": "${nrf-connect.sdk:1.8.0}",
-    "nrf-connect.toolchain.path": "${nrf-connect.toolchain:1.8.0}",
+    "nrf-connect.topdir": "${nrf-connect.sdk:1.9.1}",
+    "nrf-connect.toolchain.path": "${nrf-connect.toolchain:1.9.1}",
     "C_Cpp.errorSquiggles": "Enabled"
 }

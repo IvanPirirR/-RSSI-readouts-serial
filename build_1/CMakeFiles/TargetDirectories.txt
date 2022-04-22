@@ -96,6 +96,8 @@ C:/Users/ivpi/mytestfolder/Check_signal/build_1/zephyr/subsys/bluetooth/host/CMa
 C:/Users/ivpi/mytestfolder/Check_signal/build_1/zephyr/subsys/bluetooth/host/CMakeFiles/rebuild_cache.dir
 C:/Users/ivpi/mytestfolder/Check_signal/build_1/zephyr/subsys/bluetooth/services/CMakeFiles/edit_cache.dir
 C:/Users/ivpi/mytestfolder/Check_signal/build_1/zephyr/subsys/bluetooth/services/CMakeFiles/rebuild_cache.dir
+C:/Users/ivpi/mytestfolder/Check_signal/build_1/zephyr/subsys/console/CMakeFiles/edit_cache.dir
+C:/Users/ivpi/mytestfolder/Check_signal/build_1/zephyr/subsys/console/CMakeFiles/rebuild_cache.dir
 C:/Users/ivpi/mytestfolder/Check_signal/build_1/zephyr/subsys/fs/CMakeFiles/edit_cache.dir
 C:/Users/ivpi/mytestfolder/Check_signal/build_1/zephyr/subsys/fs/CMakeFiles/rebuild_cache.dir
 C:/Users/ivpi/mytestfolder/Check_signal/build_1/zephyr/subsys/ipc/CMakeFiles/edit_cache.dir
@@ -153,6 +155,9 @@ C:/Users/ivpi/mytestfolder/Check_signal/build_1/zephyr/drivers/clock_control/CMa
 C:/Users/ivpi/mytestfolder/Check_signal/build_1/zephyr/drivers/gpio/CMakeFiles/drivers__gpio.dir
 C:/Users/ivpi/mytestfolder/Check_signal/build_1/zephyr/drivers/gpio/CMakeFiles/edit_cache.dir
 C:/Users/ivpi/mytestfolder/Check_signal/build_1/zephyr/drivers/gpio/CMakeFiles/rebuild_cache.dir
+C:/Users/ivpi/mytestfolder/Check_signal/build_1/zephyr/drivers/serial/CMakeFiles/drivers__serial.dir
+C:/Users/ivpi/mytestfolder/Check_signal/build_1/zephyr/drivers/serial/CMakeFiles/edit_cache.dir
+C:/Users/ivpi/mytestfolder/Check_signal/build_1/zephyr/drivers/serial/CMakeFiles/rebuild_cache.dir
 C:/Users/ivpi/mytestfolder/Check_signal/build_1/zephyr/drivers/entropy/CMakeFiles/drivers__entropy.dir
 C:/Users/ivpi/mytestfolder/Check_signal/build_1/zephyr/drivers/entropy/CMakeFiles/edit_cache.dir
 C:/Users/ivpi/mytestfolder/Check_signal/build_1/zephyr/drivers/entropy/CMakeFiles/rebuild_cache.dir
