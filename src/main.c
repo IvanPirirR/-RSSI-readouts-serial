@@ -14,7 +14,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-//#include <console/console.h>
 #include <device.h>
 #include <devicetree.h>
 #include <drivers/uart.h>
@@ -34,17 +33,44 @@ void change_name(void);
 void change_instruction(uint8_t inst);
 static struct bt_scan_cb scan_cb;
 
-//Name has to be maximum 8 bytes
-static char *target = "Default";
+//Main functionalities of the program
+enum instruction_type {
+	/** @brief Turn passive scanning on. 
+	 * 
+	*/
+	PASSIVE_SCAN_ON,
+	/**
+	 * @brief Turn active scanning on.
+	 *
+	 */
+	ACTIVE_SCAN_ON,
+	/**
+	 * @brief Turn off scanning.
+	 *
+	 */
+	SCAN_OFF,
+	/**
+	 * @brief Change the name of the target device.
+	 *
+	 */
+	CHANGE_TARGET_NAME,
+	/**
+	 */
+};
+
 static uint8_t rx_buf[RECEIVE_BUFF_SIZE] ={0};
 static uint8_t newbuf[10] ={0};
-static int instruction_type =0;
+static enum instruction_type instruction;
 K_SEM_DEFINE(instance_monitor_sem, 0, 1);
+
 
 /* Scanning for Advertising packets, using the name to check if the device is the target*/
 static void config_scan(void)
 {
 	int err;
+
+	//Name has to be maximum 8 bytes
+	char *target = "Default";
 
 	//General scan parameters
 	struct bt_le_scan_param scan_param = {
@@ -124,24 +150,24 @@ void change_instruction(uint8_t inst){
 
 	//Start passive scanning
 	if (strcmp(casename,"p") == 0){
-		instruction_type = 1;
+		instruction = PASSIVE_SCAN_ON;
 	}
 
 	//Start active scanning 
-	else if (strcmp(casename,"a") == 0)
-	{
-		instruction_type = 2;
+	else if (strcmp(casename,"a") == 0){
+		instruction = ACTIVE_SCAN_ON;
 	}
 	
 	//Stop scanning 
 	else if (strcmp(casename,"s") == 0){
-		instruction_type = 3;
+		instruction = SCAN_OFF;
 	}
 
 	//Change name
 	else if (strcmp(casename,"c") == 0){
-		instruction_type = 4;
+		instruction = CHANGE_TARGET_NAME;
 	}
+
 
 	//Give access to the main thread
 	k_sem_give(&instance_monitor_sem);
@@ -172,8 +198,7 @@ void change_name(void){
 	memset(newbuf,0,10);
 }
 
-
-//Handling the UART
+//Handling the UART events
 static void uart_cb(const struct device *dev, struct uart_event *evt, void *user_data)
 {
 	switch (evt->type)
@@ -210,11 +235,10 @@ void main(void)
 
 	//Initializing UART
 	const struct device *uart= device_get_binding(DT_LABEL(DT_NODELABEL(uart0)));
-	if (uart == NULL) 
-	{
-		printk("Could not find  %s!\n\r", DT_LABEL(DT_NODELABEL(uart0)));
+		if (uart == NULL){
+			printk("Could not find  %s!\n\r", DT_LABEL(DT_NODELABEL(uart0)));
 		return;
-	}
+		}
 	err = uart_callback_set(uart, uart_cb, NULL);
 		if (err){
 			printk("could not enable callback error %i\n",err);
@@ -227,9 +251,9 @@ void main(void)
 
 	//Initializing Bluetooth
 	err = bt_enable(ble_ready);
-	if (err) {
-		printk("Cold not enable Bluetooth\n");
-	}
+		if (err) {
+			printk("Cold not enable Bluetooth\n");
+		}
 	printk("Bluetooth initialized\n");
 
 	//Initializing the scanning module
@@ -241,10 +265,10 @@ void main(void)
 		//Wait for the new instruction
 		k_sem_take(&instance_monitor_sem, K_FOREVER);
 
-		switch (instruction_type)
+		switch (instruction)
 		{
 		//Star passive scanning
-		case 1:
+		case PASSIVE_SCAN_ON:
 			err = bt_scan_start(BT_SCAN_TYPE_SCAN_PASSIVE);
 			if (err == -EALREADY)
 			{
@@ -257,7 +281,7 @@ void main(void)
 			break;
 		
 		//Start active scanning
-		case 2:
+		case ACTIVE_SCAN_ON:
 			err = bt_scan_start(BT_SCAN_TYPE_SCAN_ACTIVE);
 			if (err == -EALREADY)
 			{
@@ -270,7 +294,7 @@ void main(void)
 			break;
 
 		//Stop scanning
-		case 3:
+		case SCAN_OFF:
 			err = bt_scan_stop();
 			if (err == -EALREADY) {
 				printk("Scanning is not on");
@@ -284,14 +308,13 @@ void main(void)
 			break;
 		
 		//Change the device name
-		case 4:
+		case CHANGE_TARGET_NAME:
 			change_name();
 			break;
 
 		default:
 			break;
 		}
-		instruction_type = 0;
 		
 	}	
 }
