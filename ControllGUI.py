@@ -1,18 +1,20 @@
+import sys
+from time import sleep
 import serial
 import datetime as dt
-from matplotlib.animation import FuncAnimation
-from matplotlib import pyplot as plt
 import threading
 import queue
 import csv
-import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QLCDNumber, QFrame, QGridLayout, QMainWindow, QVBoxLayout
-from PyQt5.QtGui import QFont, QColor
+from matplotlib.animation import FuncAnimation
+from PyQt5.QtWidgets import QDialog, QApplication, QPushButton, QGridLayout, QFrame, QLCDNumber, QLabel, QTextEdit
+from PyQt5.QtGui import QColor, QFont
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
+import matplotlib.pyplot as plt
 
 #Gloval variables
 console_message = ''
-rssiVal = None
+rssiVal = -40
 
 #Setting queue
 q1 = queue.Queue(30)
@@ -29,21 +31,32 @@ serialPort = serial.Serial(port ="COM38", baudrate = 115200, bytesize=8, timeout
 serialString = ""
 
 #Plot initiation
-fig = plt.figure()
-ax = fig.add_subplot(1,1,1)
 xs = []
 ys = []
 
+#Function to change the name
+def changeName(name):
+    a = b'\x00'
+    if len(name) > 8:
+        print("Name too long")
+    else:
+        new_name = a + bytes('c','utf-8') + bytes(name,'utf-8') + a*(8-len(name))
+        print(new_name)
+
 
 #Class for the window
-class MainWindow(QMainWindow):
+class MainWindow(QDialog):
 
     def __init__(self,parent=None):
         super(MainWindow, self).__init__(parent)
+        self.figure = plt.figure()
+        self.ax = self.figure.add_subplot(1,1,1)
+        self.canvas = FigureCanvas(self.figure)
+        self.toolbar = NavigationToolbar(self.canvas, self)
         self.initializeUI()
 
     def initializeUI(self):
-        #self.setGeometry(200, 100, 250, 200)
+        self.setGeometry(200, 100, 820, 550)
         self.setWindowTitle("Display rssi value")
         self.setUpFrame()
         self.setUpMainLabel()
@@ -52,18 +65,34 @@ class MainWindow(QMainWindow):
         self.setUpSaveButton()
         self.setUpUpdateButton()
         self.setUpNumber()
+        self.setUpPlot()
+        self.setUpTexbox()
         self.show()
+
+    def setUpTexbox(self):
+        text_label = QLabel(self)
+        self.main_texbox = QTextEdit(self)
+        text_label.setText("Name")
+        self.main_texbox.setGeometry(50,200,116,25)
+        text_label.setGeometry(10,200,100,25)
+        name_button = QPushButton(self)
+        name_button.setText("Change name")
+        name_button.clicked.connect(self.name_click)
+        self.main_layout.addWidget(name_button, 5,0,1,2)
+
+
+    def setUpPlot(self):
+        self.main_layout.addWidget(self.toolbar,0,2,1,1)
+        self.main_layout.addWidget(self.canvas, 1,2,8,1)
 
     def setUpFrame(self):
         main_frame = QFrame(self)
-        main_frame.setStyleSheet("Qwidget { background-color: %s}"% QColor(210,210,235,255).name())
+        main_frame.setStyleSheet("Qwidget { background-color: %s}"% QColor(250,210,235,255).name())
         self.main_layout = QGridLayout()
         main_frame.setLayout(self.main_layout)
-        self.setCentralWidget(main_frame)
 
     def setUpNumber(self):
         self.number_display = QLCDNumber(self)
-        #self.number_display.move(120,20)
         self.number_display.display(0)
         self.number_display.setSegmentStyle(QLCDNumber.Flat)
         self.main_layout.addWidget(self.number_display, 0,1,1,1)
@@ -72,48 +101,46 @@ class MainWindow(QMainWindow):
         name_label = QLabel(self)
         name_label.setFont(QFont('Arial',15))
         name_label.setText("rssi value:")
-        #name_label.move(50,25)
         self.main_layout.addWidget(name_label, 0,0,1,1)
 
     def setUpUpdateButton(self):
         update_button=QPushButton(self)
         update_button.setText("Update")
-        #update_button.move(80,130)
-        self.main_layout.addWidget(update_button, 4,0,1,2)
+        self.main_layout.addWidget(update_button, 3,0,1,2)
         update_button.clicked.connect(self.update_click)
 
     def setUpSaveButton(self):
         save_button=QPushButton(self)
         save_button.setText("Save")
-        #save_button.move(80,160)
-        self.main_layout.addWidget(save_button, 5,0,1,2)
+        self.main_layout.addWidget(save_button, 4,0,1,2)
         save_button.clicked.connect(self.save_click)
 
     def setUpStopButton(self):
         stop_button=QPushButton(self)
         stop_button.setToolTip("Stop scanning")
-        #stop_button.move(80,100)
-        self.main_layout.addWidget(stop_button, 3,0,1,2)
+        self.main_layout.addWidget(stop_button, 2,0,1,2)
         stop_button.setText("Stop")
         stop_button.clicked.connect(self.stop_click)
 
     def setUpStartButton(self):
         start_button = QPushButton(self)
         start_button.setToolTip("Start (passive) scanning")
-        #start_button.move(80,70)
-        self.main_layout.addWidget(start_button, 2,0,1,2)
+        self.main_layout.addWidget(start_button, 1,0,1,2)
         start_button.setText("Start")
         start_button.clicked.connect(self.start_click)
 
     def update_click(self):
         self.number_display.display(rssiVal)
 
+    def name_click(self):
+        changeName(self.main_texbox.toPlainText())
+
     def start_click(self):
-        serialPort.write(bytes("1ptestname",'utf-8'))
+        serialPort.write(bytes("1pxxxxxxxx",'utf-8'))
         print("Start")
 
     def stop_click(self):
-        serialPort.write(bytes("1stestname",'utf-8'))
+        serialPort.write(bytes("1sxxxxxxxx",'utf-8'))
         print("Stop")
 
     def save_click(self):
@@ -127,10 +154,10 @@ def setparameters():
     plt.grid(linestyle='-', linewidth=0.5)
     plt.xticks(rotation=45, ha='right')
     plt.subplots_adjust(bottom=0.30)
-    plt.title('Signal strenght')
+    plt.title('Signal magnitude')
     plt.ylabel('rssi (dB)')
     plt.gca().get_lines()[0].set_color('blue')
-    plt.gca().invert_yaxis()
+    #plt.gca().invert_yaxis()
 
 
 #Function for the animation
@@ -149,8 +176,9 @@ def animation(i,xs,ys):
         ys.append(x)
         xs = xs[-20:]
         ys = ys[-20:]
-        ax.clear()
-        ax.plot(xs,ys)
+        main.ax.clear()
+        main.ax.plot(xs,ys)
+        #main.canvas.draw()
 
         #Set parameters
         setparameters()
@@ -164,7 +192,7 @@ def readValues():
                 if(serialPort.in_waiting > 0):
                         serialString = serialPort.readline().decode('Ascii').replace('\r\n','')
                         if serialString.lstrip("-").isdigit():
-                            rssiVal = float(serialString)
+                            rssiVal = int(serialString)
 
                             mutex.acquire()
                             if(not q1.full()):
@@ -176,14 +204,11 @@ def readValues():
 
                         else:
                             console_message = serialString
-
+                            print(console_message)
 
 #Thread to read console values as they come
-t = threading.Thread(target=readValues)                                
+t = threading.Thread(target=readValues)                       
 t.start()
-
-#ani = FuncAnimation(fig,animation,fargs=(xs,ys),interval=1000)
-#plt.show()
 
 #Save values inside the queue
 def saveValues():
@@ -201,10 +226,10 @@ def saveValues():
 
 
 if __name__ == '__main__':
-
-    #Plot initiation
-    #plt.show()
-
     app = QApplication(sys.argv)
-    window = MainWindow()
-    sys.exit(app.exec())
+
+    main = MainWindow()
+    ani = FuncAnimation(main.figure,animation,fargs=(xs,ys),interval=1000)
+
+
+    sys.exit(app.exec_())

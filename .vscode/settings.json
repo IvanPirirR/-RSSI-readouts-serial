@@ -1,7 +1,8 @@
 {
     "nrf-connect.applications": [
         "${workspaceFolder}",
-        "c:\\Users\\ivpi\\mytestfolder\\central_multilink"
+        "c:\\Users\\ivpi\\mytestfolder\\central_multilink",
+        "c:\\Users\\ivpi\\mytestfolder\\CS_shell"
     ],
     "files.associations": {
         "gatt.h": "c",

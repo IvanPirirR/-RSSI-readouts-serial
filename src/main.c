@@ -24,7 +24,7 @@
 #include <bluetooth/scan.h>
 #include <sys/byteorder.h>
 
-#define RECEIVE_BUFF_SIZE 11
+#define RECEIVE_BUFF_SIZE 10
 #define RECEIVE_TIMEOUT 100
 #define SLEEP_TIME_MS   1000
 
@@ -33,7 +33,7 @@ void change_name(void);
 void change_instruction(uint8_t inst);
 static struct bt_scan_cb scan_cb;
 
-//Main functionalities of the program
+//Main tasks of the program
 enum instruction_type {
 	/** @brief Turn passive scanning on. 
 	 * 
@@ -210,7 +210,7 @@ static void uart_cb(const struct device *dev, struct uart_event *evt, void *user
 		}
 
 		//Save new values
-		for (int i = evt->data.rx.offset; i < ((evt->data.rx.len + evt->data.rx.offset)-1); i++)
+		for (int i = evt->data.rx.offset; i < ((evt->data.rx.len + evt->data.rx.offset)); i++)
 		{
 		newbuf[i - evt->data.rx.offset] = evt->data.rx.buf[i];
 		}
@@ -278,6 +278,7 @@ void main(void)
 			else if (err) {
 				printk("Scanning failed to start, err %d\n", err);
 			}
+			printk("Passive scanning on \n");
 			break;
 		
 		//Start active scanning
@@ -291,6 +292,7 @@ void main(void)
 			else if (err) {
 				printk("Scanning failed to start, err %d\n", err);
 			}
+			printk("Active scanning on \n");
 			break;
 
 		//Stop scanning
@@ -303,13 +305,13 @@ void main(void)
 			else if (err){
 				printk("Scanning failed to stop, err %d\n", err);
 			}
-			
 			printk("Scanning has stopped \n");
 			break;
 		
 		//Change the device name
 		case CHANGE_TARGET_NAME:
 			change_name();
+			printk("The name has changed \n");
 			break;
 
 		default:
